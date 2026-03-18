@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-03-17T23:42:20",
+  "state": {
+    "last_boot": null,
+    "status": "cold",
+    "body_state": "unassembled",
+    "notes": []
+  },
+  "boot_summary": [
+    "Ensured 7 directories.",
+    "PID lock acquired: 2046",
+    "Created default system_config.json",
+    "Created identity store",
+    "Created state store",
+    "Created memory journal",
+    "Created recovery snapshot placeholder",
+    "Validated 5 required files.",
+    "viable=True",
+    "missing_required=[]"
+  ]
+}

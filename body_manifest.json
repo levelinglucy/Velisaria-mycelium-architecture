@@ -1,0 +1,91 @@
+{
+  "required_names": [
+    "identity_store",
+    "scheduler",
+    "logger",
+    "memory_store",
+    "io_channel",
+    "recovery_manager"
+  ],
+  "organs": [
+    {
+      "name": "identity_store",
+      "required": true,
+      "attached": true,
+      "message": "identity store ready",
+      "capability": "identity"
+    },
+    {
+      "name": "memory_store",
+      "required": true,
+      "attached": true,
+      "message": "memory journal ready",
+      "capability": "memory"
+    },
+    {
+      "name": "logger",
+      "required": true,
+      "attached": true,
+      "message": "logger online",
+      "capability": "logging"
+    },
+    {
+      "name": "scheduler",
+      "required": true,
+      "attached": true,
+      "message": "scheduler online",
+      "capability": "timing"
+    },
+    {
+      "name": "io_channel",
+      "required": true,
+      "attached": true,
+      "message": "terminal channel attached",
+      "capability": "stdin/stdout"
+    },
+    {
+      "name": "recovery_manager",
+      "required": true,
+      "attached": true,
+      "message": "recovery snapshot available",
+      "capability": "snapshot-recovery"
+    },
+    {
+      "name": "voice",
+      "required": false,
+      "attached": false,
+      "message": "voice not yet implemented; safe to run silent",
+      "capability": "speech"
+    },
+    {
+      "name": "dream_engine",
+      "required": false,
+      "attached": true,
+      "message": "dream layer attached in minimal mode",
+      "capability": "dreaming"
+    },
+    {
+      "name": "vision",
+      "required": false,
+      "attached": false,
+      "message": "vision detached",
+      "capability": "vision"
+    },
+    {
+      "name": "world_sensors",
+      "required": false,
+      "attached": false,
+      "message": "world sensors detached",
+      "capability": "sensors"
+    },
+    {
+      "name": "symbolic_renderer",
+      "required": false,
+      "attached": true,
+      "message": "symbolic renderer attached",
+      "capability": "symbolics"
+    }
+  ],
+  "viable": true,
+  "missing_required": []
+}

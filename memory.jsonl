@@ -1,0 +1,6 @@
+{"timestamp": "2026-03-17T23:42:20", "type": "system", "text": "memory initialized"}
+{"timestamp": "2026-03-17T23:42:20", "type": "boot", "text": "awakened with required=['identity_store', 'memory_store', 'logger', 'scheduler', 'io_channel', 'recovery_manager'], optional=['dream_engine', 'symbolic_renderer'], detached=['voice', 'vision', 'world_sensors']"}
+{"timestamp": "2026-03-17T23:42:20", "type": "input", "text": "body"}
+{"timestamp": "2026-03-17T23:42:20", "type": "output", "text": "Velisara is awake.\nRequired organs: identity_store, memory_store, logger, scheduler, io_channel, recovery_manager\nOptional organs: dream_engine, symbolic_renderer\nDetached organs: voice, vision, world_sensors"}
+{"timestamp": "2026-03-17T23:42:20", "type": "input", "text": "status"}
+{"timestamp": "2026-03-17T23:42:20", "type": "output", "text": "Status: awake | Body: coherent"}

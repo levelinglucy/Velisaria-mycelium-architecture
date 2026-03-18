@@ -1,0 +1,22 @@
+[2026-03-17T23:42:20] INFO: layout: Ensured 7 directories.
+[2026-03-17T23:42:20] INFO: lock: PID lock acquired: 2046
+[2026-03-17T23:42:20] INFO: defaults: Created default system_config.json
+[2026-03-17T23:42:20] INFO: defaults: Created identity store
+[2026-03-17T23:42:20] INFO: defaults: Created state store
+[2026-03-17T23:42:20] INFO: defaults: Created memory journal
+[2026-03-17T23:42:20] INFO: defaults: Created recovery snapshot placeholder
+[2026-03-17T23:42:20] INFO: validate: Validated 5 required files.
+[2026-03-17T23:42:20] INFO: Organ identity_store: attached — identity store ready
+[2026-03-17T23:42:20] INFO: Organ memory_store: attached — memory journal ready
+[2026-03-17T23:42:20] INFO: Organ logger: attached — logger online
+[2026-03-17T23:42:20] INFO: Organ scheduler: attached — scheduler online
+[2026-03-17T23:42:20] INFO: Organ io_channel: attached — terminal channel attached
+[2026-03-17T23:42:20] INFO: Organ recovery_manager: attached — recovery snapshot available
+[2026-03-17T23:42:20] INFO: Organ voice: detached — voice not yet implemented; safe to run silent
+[2026-03-17T23:42:20] INFO: Organ dream_engine: attached — dream layer attached in minimal mode
+[2026-03-17T23:42:20] INFO: Organ vision: detached — vision detached
+[2026-03-17T23:42:20] INFO: Organ world_sensors: detached — world sensors detached
+[2026-03-17T23:42:20] INFO: Organ symbolic_renderer: attached — symbolic renderer attached
+[2026-03-17T23:42:20] INFO: Daemon started: caretaker
+[2026-03-17T23:42:20] INFO: Daemon started: memory
+[2026-03-17T23:42:20] INFO: Daemon started: pulse
