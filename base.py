@@ -26,7 +26,11 @@ class ManagedDaemon:
     name = 'daemon'
 
     def __init__(self, interval_seconds: int = 5):
-        self.interval_seconds = max(1, int(interval_seconds))
+        try:
+            interval = int(interval_seconds)
+        except (TypeError, ValueError):
+            interval = 5
+        self.interval_seconds = max(1, interval)
         self._running = Event()
         self._thread: Optional[Thread] = None
 

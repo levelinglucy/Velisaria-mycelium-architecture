@@ -40,6 +40,7 @@ def run():
     logger = EventLogger(EVENT_LOG, BOOT_LOG)
     boot = Bootstrapper(logger)
     summary = []
+    daemons = []
 
     try:
         for step in [boot.ensure_layout, boot.acquire_lock, boot.ensure_defaults, boot.validate_required_files]:
@@ -93,6 +94,12 @@ def run():
                     break
                 print(kernel.interact(text))
     finally:
+        for daemon in daemons:
+            try:
+                daemon.stop()
+                logger.boot('info', f'Daemon stopped: {daemon.name}')
+            except Exception as exc:
+                logger.boot('warning', f'Daemon stop failed: {daemon.name} ({exc})')
         boot.release_lock()
 
 
