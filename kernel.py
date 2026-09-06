@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict, List
 
-from .paths import IDENTITY_FILE, STATE_FILE, MEMORY_FILE
-from .utils import read_json, write_json, append_jsonl, now_iso
+from paths import IDENTITY_FILE, STATE_FILE, MEMORY_FILE
+from utils import read_json, write_json, append_jsonl, now_iso
 
 
 @dataclass

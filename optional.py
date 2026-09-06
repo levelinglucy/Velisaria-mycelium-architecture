@@ -1,4 +1,4 @@
-from .base import Organ, OrganStatus
+from base import Organ, OrganStatus
 
 
 class VoiceOrgan(Organ):

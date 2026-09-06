@@ -1,6 +1,6 @@
-from .base import ManagedDaemon
-from ..paths import HEARTBEAT_FILE
-from ..utils import write_json, now_iso
+from base import ManagedDaemon
+from paths import HEARTBEAT_FILE
+from utils import write_json, now_iso
 
 
 class PulseDaemon(ManagedDaemon):

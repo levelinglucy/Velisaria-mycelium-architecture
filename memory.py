@@ -1,6 +1,6 @@
-from .base import ManagedDaemon
-from ..paths import STATE_FILE, SNAPSHOT_FILE
-from ..utils import read_json, write_json, now_iso
+from base import ManagedDaemon
+from paths import STATE_FILE, SNAPSHOT_FILE
+from utils import read_json, write_json, now_iso
 
 
 class MemoryDaemon(ManagedDaemon):

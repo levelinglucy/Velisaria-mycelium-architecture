@@ -1,5 +1,5 @@
-from .base import ManagedDaemon
-from ..paths import ALL_DIRS
+from base import ManagedDaemon
+from paths import ALL_DIRS
 
 
 class CaretakerDaemon(ManagedDaemon):

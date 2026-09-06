@@ -1,5 +1,5 @@
 from pathlib import Path
-from .utils import now_iso, ensure_parent
+from utils import now_iso, ensure_parent
 
 
 class EventLogger:

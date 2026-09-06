@@ -1,6 +1,6 @@
-from .base import Organ, OrganStatus
-from ..paths import IDENTITY_FILE, MEMORY_FILE, EVENT_LOG, SNAPSHOT_FILE
-from ..utils import file_nonempty
+from base import Organ, OrganStatus
+from paths import IDENTITY_FILE, MEMORY_FILE, EVENT_LOG, SNAPSHOT_FILE
+from utils import file_nonempty
 
 
 class IdentityStoreOrgan(Organ):

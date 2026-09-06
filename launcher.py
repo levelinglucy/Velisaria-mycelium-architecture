@@ -3,16 +3,16 @@ from __future__ import annotations
 
 from dataclasses import asdict
 
-from velisara_agent.bootstrap import Bootstrapper
-from velisara_agent.config.defaults import DEFAULT_CONFIG
-from velisara_agent.daemons.caretaker import CaretakerDaemon
-from velisara_agent.daemons.memory import MemoryDaemon
-from velisara_agent.daemons.pulse import PulseDaemon
-from velisara_agent.kernel import Kernel
-from velisara_agent.logging_layer import EventLogger
-from velisara_agent.organs.registry import ALL_ORGANS
-from velisara_agent.paths import BOOT_LOG, EVENT_LOG, CONFIG_FILE
-from velisara_agent.utils import read_json
+from bootstrap import Bootstrapper
+from defaults import DEFAULT_CONFIG
+from caretaker import CaretakerDaemon
+from memory import MemoryDaemon
+from pulse import PulseDaemon
+from kernel import Kernel
+from logging_layer import EventLogger
+from registry import ALL_ORGANS
+from paths import BOOT_LOG, EVENT_LOG, CONFIG_FILE
+from utils import read_json
 
 
 def assemble_body(logger):
