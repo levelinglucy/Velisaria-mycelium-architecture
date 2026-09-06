@@ -7,7 +7,7 @@ from paths import (
     ALL_DIRS, CONFIG_FILE, IDENTITY_FILE, MEMORY_FILE, STATE_FILE,
     MANIFEST_FILE, PID_FILE, SNAPSHOT_FILE
 )
-from utils import now_iso, write_json, append_jsonl, read_json, file_nonempty
+from utils import now_iso, write_json, append_jsonl, read_json, read_jsonl, file_nonempty
 
 
 @dataclass
@@ -68,12 +68,17 @@ class Bootstrapper:
         return BootStatus('defaults', True, details or ['Defaults already present.'])
 
     def validate_required_files(self) -> BootStatus:
+        identity_ok = file_nonempty(IDENTITY_FILE) and isinstance(read_json(IDENTITY_FILE, None), dict)
+        state_ok = file_nonempty(STATE_FILE) and isinstance(read_json(STATE_FILE, None), dict)
+        config_ok = file_nonempty(CONFIG_FILE) and isinstance(read_json(CONFIG_FILE, None), dict)
+        snapshot_ok = file_nonempty(SNAPSHOT_FILE) and isinstance(read_json(SNAPSHOT_FILE, None), dict)
+        memory_ok = file_nonempty(MEMORY_FILE) and isinstance(read_jsonl(MEMORY_FILE, None), list)
         required = {
-            'identity_store': file_nonempty(IDENTITY_FILE),
-            'memory_store': file_nonempty(MEMORY_FILE),
-            'state_store': file_nonempty(STATE_FILE),
-            'config': file_nonempty(CONFIG_FILE),
-            'recovery_snapshot': file_nonempty(SNAPSHOT_FILE),
+            'identity_store': identity_ok,
+            'memory_store': memory_ok,
+            'state_store': state_ok,
+            'config': config_ok,
+            'recovery_snapshot': snapshot_ok,
         }
         missing = [k for k, v in required.items() if not v]
         if missing:

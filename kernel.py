@@ -1,7 +1,8 @@
+import time
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Callable, Dict, List, Optional
 
-from paths import IDENTITY_FILE, STATE_FILE, MEMORY_FILE
+from paths import IDENTITY_FILE, STATE_FILE, MEMORY_FILE, SNAPSHOT_FILE
 from utils import read_json, write_json, append_jsonl, now_iso
 
 
@@ -13,9 +14,10 @@ class BodyMap:
 
 
 class Kernel:
-    def __init__(self, logger, manifest: Dict):
+    def __init__(self, logger, manifest: Dict, daemon_status_provider: Optional[Callable[[], str]] = None):
         self.logger = logger
         self.manifest = manifest
+        self.daemon_status_provider = daemon_status_provider
         self.identity = read_json(IDENTITY_FILE, {'name': 'Unknown'})
         self.state = read_json(STATE_FILE, {})
 
@@ -60,6 +62,17 @@ class Kernel:
         ]
         return '\n'.join(lines)
 
+    def _last_snapshot_age_seconds(self) -> Optional[int]:
+        if not SNAPSHOT_FILE.exists() or not SNAPSHOT_FILE.is_file():
+            return None
+        age = int(max(0, time.time() - SNAPSHOT_FILE.stat().st_mtime))
+        return age
+
+    def _daemon_status(self) -> str:
+        if self.daemon_status_provider is None:
+            return 'unknown'
+        return self.daemon_status_provider()
+
     def interact(self, text: str) -> str:
         text = text.strip()
         append_jsonl(MEMORY_FILE, {'timestamp': now_iso(), 'type': 'input', 'text': text})
@@ -68,9 +81,21 @@ class Kernel:
             body = self.body_map()
             reply = self.startup_summary(body)
         elif low in {'status', 'health'}:
-            reply = f"Status: {self.state.get('status', 'unknown')} | Body: {self.state.get('body_state', 'unknown')}"
+            age = self._last_snapshot_age_seconds()
+            age_text = f'{age}s' if age is not None else 'unavailable'
+            reply = (
+                f"Status: {self.state.get('status', 'unknown')} | "
+                f"Body: {self.state.get('body_state', 'unknown')} | "
+                f"Daemons: {self._daemon_status()} | "
+                f"Last snapshot age: {age_text}"
+            )
+        elif low == 'daemons':
+            reply = f'Daemons: {self._daemon_status()}'
+        elif low in {'last_snapshot_age', 'snapshot_age'}:
+            age = self._last_snapshot_age_seconds()
+            reply = f"Last snapshot age: {f'{age}s' if age is not None else 'unavailable'}"
         elif low in {'help', '?'}:
-            reply = 'Commands: body, status, help, quit'
+            reply = 'Commands: body, status, daemons, last_snapshot_age, help, quit'
         else:
             reply = f"I heard: {text}"
         append_jsonl(MEMORY_FILE, {'timestamp': now_iso(), 'type': 'output', 'text': reply})

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
+import signal
 from dataclasses import asdict
 
 from bootstrap import Bootstrapper
@@ -36,13 +38,32 @@ def assemble_body(logger):
     return config, manifest
 
 
-def run():
+def run(once: bool = False):
     logger = EventLogger(EVENT_LOG, BOOT_LOG)
     boot = Bootstrapper(logger)
     summary = []
     daemons = []
+    stop_requested = {'value': False}
+    previous_handlers = {}
+
+    def daemon_status() -> str:
+        return ', '.join(
+            f"{daemon.name}={'running' if daemon.is_running else 'stopped'}"
+            for daemon in daemons
+        ) or 'none'
+
+    def _handle_signal(signum, _frame):
+        stop_requested['value'] = True
+        try:
+            logger.boot('warning', f'Signal received: {signum}. Initiating shutdown.')
+        except Exception:
+            pass
 
     try:
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            previous_handlers[sig] = signal.getsignal(sig)
+            signal.signal(sig, _handle_signal)
+
         for step in [boot.ensure_layout, boot.acquire_lock, boot.ensure_defaults, boot.validate_required_files]:
             status = step()
             summary.extend(status.details)
@@ -66,7 +87,7 @@ def run():
                 print(f"- {organ['name']}: {state} ({organ['message']})")
             return
 
-        kernel = Kernel(logger, manifest)
+        kernel = Kernel(logger, manifest, daemon_status_provider=daemon_status)
         context = {
             'logger': logger,
             'boot_summary': summary,
@@ -82,8 +103,15 @@ def run():
             logger.boot('info', f'Daemon started: {daemon.name}')
 
         print(kernel.awaken())
+        if once:
+            print('Smoke test mode complete.')
+            return
+
         if config.get('interactive_shell', True):
             while True:
+                if stop_requested['value']:
+                    print('\nShutting down.')
+                    break
                 try:
                     text = input('vel> ').strip()
                 except (EOFError, KeyboardInterrupt):
@@ -93,7 +121,11 @@ def run():
                     print('Goodbye.')
                     break
                 print(kernel.interact(text))
+    except KeyboardInterrupt:
+        print('\nShutting down.')
     finally:
+        for sig, handler in previous_handlers.items():
+            signal.signal(sig, handler)
         for daemon in daemons:
             try:
                 daemon.stop()
@@ -103,5 +135,16 @@ def run():
         boot.release_lock()
 
 
+def main(argv=None):
+    parser = argparse.ArgumentParser(description='Velisara launcher')
+    parser.add_argument(
+        '--once',
+        action='store_true',
+        help='Run a non-interactive smoke test boot, then shut down cleanly.',
+    )
+    args = parser.parse_args(argv)
+    run(once=args.once)
+
+
 if __name__ == '__main__':
-    run()
+    main()

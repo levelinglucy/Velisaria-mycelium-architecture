@@ -41,6 +41,10 @@ class ManagedDaemon:
         self._thread = Thread(target=self._loop, args=(context,), name=f'{self.name}_daemon', daemon=True)
         self._thread.start()
 
+    @property
+    def is_running(self) -> bool:
+        return bool(self._thread and self._thread.is_alive() and self._running.is_set())
+
     def stop(self) -> None:
         self._running.clear()
         if self._thread and self._thread.is_alive():
