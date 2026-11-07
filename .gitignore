@@ -1,0 +1,11 @@
+# Maintained runtime data should stay outside the repository.
+velisara_agent/config/
+velisara_agent/data/
+velisara_agent/logs/
+velisara_agent/backups/
+velisara_agent/runtime/
+velisara_agent/organs/__pycache__/
+velisara_agent/daemons/__pycache__/
+velisara_agent/config/__pycache__/
+**/__pycache__/
+.pytest_cache/
