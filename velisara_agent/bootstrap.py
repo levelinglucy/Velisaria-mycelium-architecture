@@ -104,10 +104,10 @@ class Bootstrapper:
                             v = value.get(interval)
                             if not isinstance(v, (int, float)) or isinstance(v, bool) or v <= 0:
                                 problems.append(f'Invalid {interval} in config')
-                    elif name == 'state':
+                    elif name == 'state_store':
                         if 'notes' in value and not isinstance(value['notes'], list):
                             problems.append('Invalid state notes type')
-                    elif name == 'identity':
+                    elif name == 'identity_store':
                         if not isinstance(value.get('name'), str) or not value['name']:
                             problems.append('Invalid identity name')
                 except (ValueError, UnicodeError, OSError):
