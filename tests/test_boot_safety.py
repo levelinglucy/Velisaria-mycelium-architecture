@@ -96,13 +96,13 @@ class TestLaunchSafety(unittest.TestCase):
         self.assert_corrupt_journal_refuses_awakening(lambda raw: raw + b'{"partial":')
 
     def test_valid_but_unterminated_journal_line_is_not_extended(self):
-        self.assert_corrupt_journal_refuses_awakening(lambda raw: raw.rstrip(b'\\n'))
+        self.assert_corrupt_journal_refuses_awakening(lambda raw: raw.rstrip(b'\n'))
 
     def test_invalid_journal_line_is_not_ignored(self):
-        self.assert_corrupt_journal_refuses_awakening(lambda raw: raw + b'not-json\\n')
+        self.assert_corrupt_journal_refuses_awakening(lambda raw: raw + b'not-json\n')
 
     def test_invalid_journal_utf8_is_not_ignored(self):
-        self.assert_corrupt_journal_refuses_awakening(lambda raw: raw + b'\\xff\\n')
+        self.assert_corrupt_journal_refuses_awakening(lambda raw: raw + b'\xff\n')
 
     def test_atomic_write_refuses_unserializable_input(self):
         from velisara_agent.utils import write_json
