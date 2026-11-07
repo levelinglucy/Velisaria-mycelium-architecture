@@ -104,6 +104,61 @@ class TestLaunchSafety(unittest.TestCase):
     def test_invalid_journal_utf8_is_not_ignored(self):
         self.assert_corrupt_journal_refuses_awakening(lambda raw: raw + b'\xff\n')
 
+
+    def test_missing_journal_in_existing_runtime_is_not_recreated(self):
+        self.assertIn('is awake', self.launch().stdout)
+        journal = self.home / 'data' / 'memory.jsonl'
+        identity = self.home / 'data' / 'identity.json'
+        state = self.home / 'data' / 'state.json'
+        snapshot = self.home / 'backups' / 'last_snapshot.json'
+        before = (identity.read_bytes(), state.read_bytes(), snapshot.read_bytes())
+        journal.unlink()
+        result = self.launch()
+        self.assertIn('Assembly mode only', result.stdout, result.stderr)
+        self.assertNotIn('is awake', result.stdout)
+        self.assertFalse(journal.exists())
+        self.assertEqual(before, (identity.read_bytes(), state.read_bytes(), snapshot.read_bytes()))
+
+    def test_missing_snapshot_in_existing_runtime_is_not_recreated(self):
+        self.assertIn('is awake', self.launch().stdout)
+        snapshot = self.home / 'backups' / 'last_snapshot.json'
+        identity = self.home / 'data' / 'identity.json'
+        journal = self.home / 'data' / 'memory.jsonl'
+        before = (identity.read_bytes(), journal.read_bytes())
+        snapshot.unlink()
+        result = self.launch()
+        self.assertIn('Assembly mode only', result.stdout, result.stderr)
+        self.assertFalse(snapshot.exists())
+        self.assertEqual(before, (identity.read_bytes(), journal.read_bytes()))
+
+    def test_memory_worker_starts_only_after_successful_awakening(self):
+        self.assertIn('is awake', self.launch().stdout)
+        state = self.home / 'data' / 'state.json'
+        state_json = json.loads(state.read_text(encoding='utf-8'))
+        state_json['status'] = 'quiescent'
+        state.write_text(json.dumps(state_json) + '\\n', encoding='utf-8')
+        snapshot = self.home / 'backups' / 'last_snapshot.json'
+        snapshot.write_text('{"marker":"prior snapshot"}\\n', encoding='utf-8')
+        script = """
+from velisara_agent.daemons.memory import MemoryDaemon
+from velisara_agent.paths import STATE_FILE, SNAPSHOT_FILE
+from velisara_agent.utils import read_json
+original_start = MemoryDaemon.start
+def checked_start(self, context):
+    assert read_json(STATE_FILE, {})['status'] == 'awake', 'memory worker starts before awakening'
+    assert read_json(SNAPSHOT_FILE, {}).get('marker') == 'prior snapshot', 'snapshot was overwritten before awakening'
+    return original_start(self, context)
+MemoryDaemon.start = checked_start
+import launcher
+launcher.run()
+"""
+        result = subprocess.run(
+            [sys.executable, '-c', script], cwd=REPO_ROOT,
+            env=self.env, input='quit\\n', capture_output=True, text=True, timeout=15,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('is awake', result.stdout)
+
     def test_atomic_write_refuses_unserializable_input(self):
         from velisara_agent.utils import write_json
         target = Path(self.temp.name) / 'important.json'
