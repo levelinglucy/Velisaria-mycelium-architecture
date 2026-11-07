@@ -80,6 +80,30 @@ class TestLaunchSafety(unittest.TestCase):
         self.assertIn('Assembly mode only', result.stdout)
         self.assertEqual(snapshot.read_bytes(), b'null')
 
+    def assert_corrupt_journal_refuses_awakening(self, damaged):
+        self.assertEqual(self.launch().returncode, 0)
+        journal = self.home / 'data' / 'memory.jsonl'
+        state = self.home / 'data' / 'state.json'
+        identity = self.home / 'data' / 'identity.json'
+        journal.write_bytes(damaged(journal.read_bytes()))
+        before = (journal.read_bytes(), state.read_bytes(), identity.read_bytes())
+        result = self.launch()
+        self.assertIn('Assembly mode only', result.stdout, result.stderr)
+        self.assertNotIn('is awake', result.stdout)
+        self.assertEqual(before, (journal.read_bytes(), state.read_bytes(), identity.read_bytes()))
+
+    def test_partial_last_journal_record_is_not_extended(self):
+        self.assert_corrupt_journal_refuses_awakening(lambda raw: raw + b'{"partial":')
+
+    def test_valid_but_unterminated_journal_line_is_not_extended(self):
+        self.assert_corrupt_journal_refuses_awakening(lambda raw: raw.rstrip(b'\\n'))
+
+    def test_invalid_journal_line_is_not_ignored(self):
+        self.assert_corrupt_journal_refuses_awakening(lambda raw: raw + b'not-json\\n')
+
+    def test_invalid_journal_utf8_is_not_ignored(self):
+        self.assert_corrupt_journal_refuses_awakening(lambda raw: raw + b'\\xff\\n')
+
     def test_atomic_write_refuses_unserializable_input(self):
         from velisara_agent.utils import write_json
         target = Path(self.temp.name) / 'important.json'
