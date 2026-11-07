@@ -1,0 +1,4 @@
+# Maintained runtime data should stay outside the repository.
+# Live state is kept outside this source tree by default.
+**/__pycache__/
+.pytest_cache/
