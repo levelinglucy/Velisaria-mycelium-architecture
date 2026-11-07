@@ -23,12 +23,19 @@ def assemble_body(logger):
     context = {'logger': logger, 'config': config}
     for organ in ALL_ORGANS:
         status = organ.attach(context)
-        organ_results.append(asdict(status))
+        result = asdict(status)
+        # The configured minimum extends intrinsic requirements; it cannot
+        # weaken an organ's built-in required flag.
+        result['required'] = bool(status.required or status.name in required_names)
+        organ_results.append(result)
         logger.boot('info', f"Organ {status.name}: {'attached' if status.attached else 'detached'} — {status.message}")
 
-    missing_required = [o['name'] for o in organ_results if o['required'] and not o['attached']]
+    required_names.update(o['name'] for o in organ_results if o['required'])
+    attached_names = {o['name'] for o in organ_results if o['attached']}
+    # Unknown configured requirements are missing too; never silently pass.
+    missing_required = sorted(required_names - attached_names)
     manifest = {
-        'required_names': list(required_names),
+        'required_names': sorted(required_names),
         'organs': organ_results,
         'viable': not missing_required,
         'missing_required': missing_required,

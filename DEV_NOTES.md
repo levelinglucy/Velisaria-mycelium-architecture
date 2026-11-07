@@ -14,9 +14,10 @@ JSON replacement and exclusive PID locking. A partially present existing runtime
 refuses default recreation, and background workers start only after successful
 awakening. Retain original flat source and uploaded state/log files for provenance.
 
-**Next:** (1) verify final CI for missing-store and startup-order regressions;
-(2) check the current PR base/protections before an alpha integration decision;
-(3) revisit snapshot rotation and wider durability only with a specific need.
+**Next:** assess the complete candidate for integration, preserving the
+architectural reconstruction as a reviewable alpha until its scope and
+compatibility are adequately supported. Revisit snapshot rotation or wider
+durability only for a concrete remaining risk.
 
 **Material limits:** There is no automatic migration of archived root-level
 data; maintained JSONL is checked at startup, but power-loss durability,
@@ -67,6 +68,14 @@ initialization now also requires owner review. This detects incomplete data
 files, not every possible history: an empty data tree containing only logs or
 directories is indistinguishable from a fresh install, and independent writers
 remain outside the PID-lock contract.
+
+The configured `minimum_required_organs` list is a hard **additional**
+requirement, not merely a display field. A known detached organ promoted to
+required, or an unknown required organ, now prevents awakening. Attached
+optional organs promoted to required appear as such in the body map.
+Intrinsic `Organ.required` flags cannot be disabled through configuration.
+Tests use synthetic configuration and show that previously the launcher
+awakened even when configured requirements were unsatisfied.
 
 The launcher finishes `Kernel.awaken()` before starting daemons. Previously,
 the memory worker's immediate first tick could overwrite the last snapshot
