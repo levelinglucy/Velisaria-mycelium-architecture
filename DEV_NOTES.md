@@ -12,12 +12,12 @@ hierarchy and missing daemon base, use a separate opt-in data root, atomic
 JSON replacement and exclusive PID locking. Retain original flat source and
 uploaded state/log files for provenance.
 
-**Next:** (1) verify CI on the exact PR revision; (2) test clean interactive
-startup and corrupt-state refusal on disposable data; (3) assess memory journal
-and actual crash/power-loss limitations before any stable release.
+**Next:** (1) validate the exact PR revision including corrupt-journal refusal;
+(2) review launcher lifecycle and partial-runtime recovery using synthetic data;
+(3) decide on alpha integration while retaining the no-migration boundary.
 
 **Material limits:** There is no automatic migration of archived root-level
-data; old JSONL is not exhaustively validated, and power-loss durability,
+data; maintained JSONL is checked at startup, but power-loss durability,
 cross-process journal consistency, stale-lock recovery, Windows and Pythonista
 behaviour are not established. A stale PID file may require manual investigation
 and safe deletion. Do not treat a successful synthetic test as a real-use
@@ -48,9 +48,14 @@ The historical `read_json` returned defaults for malformed JSON, while
 `Kernel.awaken` writes identity/state. On live paths this could overwrite
 damaged but recoverable data. The maintained package rejects invalid or structurally unusable JSON at
 boot and writes JSON through same-directory temporary files before replacing.
-The existing data is left intact on failure before replacement. Journal
-appends are **not** transactional with identity/state updates; real power-loss
-and concurrency guarantees remain out of scope.
+The existing data is left intact on failure before replacement. Maintained
+memory JSONL is now scanned read-only before awakening: invalid UTF-8, broken
+JSON objects or a final line without a newline refuse startup rather than
+allowing a boot append to extend a damaged record. A full scan costs time
+proportional to journal size; it neither repairs the file nor judges whether
+historical root-level records are safe to import. Journal appends are **not**
+transactional with identity/state updates; external concurrent writers and
+real power-loss guarantees remain out of scope.
 
 Lock acquisition now creates its PID file exclusively and removes only a lock
 owned by this launcher. We intentionally refuse existing/stale locks rather

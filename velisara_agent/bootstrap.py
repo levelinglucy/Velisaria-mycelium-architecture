@@ -7,7 +7,7 @@ from .paths import (
     ALL_DIRS, CONFIG_FILE, IDENTITY_FILE, MEMORY_FILE, STATE_FILE,
     MANIFEST_FILE, PID_FILE, SNAPSHOT_FILE
 )
-from .utils import now_iso, write_json, append_jsonl, read_json, file_nonempty
+from .utils import now_iso, write_json, append_jsonl, read_json, file_nonempty, validate_jsonl
 
 
 @dataclass
@@ -87,7 +87,13 @@ class Bootstrapper:
             if not file_nonempty(path):
                 problems.append(f'Missing or empty: {name}')
                 continue
-            if name != 'memory_store':
+            if name == 'memory_store':
+                try:
+                    validate_jsonl(path)
+                except (ValueError, UnicodeError, OSError):
+                    problems.append('Unreadable/invalid JSONL: memory_store')
+                continue
+            else:
                 try:
                     value = read_json(path, None)
                     if not isinstance(value, dict):

@@ -66,5 +66,24 @@ def append_jsonl(path: Path, obj: Any) -> None:
         f.write(line)
 
 
+def validate_jsonl(path: Path) -> None:
+    """Read-only check of the maintained JSONL journal before awakening.
+
+    Every line must be a complete UTF-8 JSON object followed by a newline.
+    This intentionally scans the whole journal at boot (linear in size)
+    rather than extending a possibly interrupted or corrupted record.
+    """
+    with open(path, 'rb') as handle:
+        for number, line in enumerate(handle, 1):
+            if not line.endswith(b'\n'):
+                raise ValueError(f'Unterminated journal record at line {number}')
+            try:
+                record = json.loads(line.decode('utf-8'))
+            except (UnicodeError, ValueError) as exc:
+                raise ValueError(f'Invalid journal record at line {number}') from exc
+            if not isinstance(record, dict):
+                raise ValueError(f'Non-object journal record at line {number}')
+
+
 def file_nonempty(path: Path) -> bool:
     return path.exists() and path.is_file() and path.stat().st_size > 0

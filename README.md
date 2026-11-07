@@ -20,8 +20,9 @@ python -m unittest discover -s tests -v
 The live data root defaults to `~/.velisara_agent`. Set
 `VELISARA_DATA_HOME` to an isolated directory to trial it without touching
 existing data. Run `quit` to exit. No network connection is opened.
-Use only copies for migration experiments; do not copy untrusted JSON into live
-data. An existing PID lock after an interruption requires owner review.
+Use only copies for migration experiments; do not copy untrusted JSON or
+JSONL into live data. A damaged journal refuses awakening instead of silently
+extending broken records. An existing PID lock after an interruption requires owner review.
 
 **Development:** This is an **unreleased alpha candidate**. See
 [developer notes](./DEV_NOTES.md) for goals, limitations, validation, and
