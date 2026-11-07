@@ -54,6 +54,24 @@ class TestLaunchSafety(unittest.TestCase):
         self.assertIn('Assembly mode only', result.stdout)
         self.assertEqual(config.read_bytes(), before)
 
+    def test_structurally_invalid_config_fails_closed(self):
+        self.assertEqual(self.launch().returncode, 0)
+        config = self.home / 'config' / 'system_config.json'
+        config.write_text('{"interactive_shell": true}', encoding='utf-8')
+        before = config.read_bytes()
+        result = self.launch()
+        self.assertIn('Assembly mode only', result.stdout)
+        self.assertEqual(config.read_bytes(), before)
+
+    def test_structurally_invalid_state_fails_closed(self):
+        self.assertEqual(self.launch().returncode, 0)
+        state = self.home / 'data' / 'state.json'
+        state.write_text('{"notes": "not a list"}', encoding='utf-8')
+        before = state.read_bytes()
+        result = self.launch()
+        self.assertIn('Assembly mode only', result.stdout)
+        self.assertEqual(state.read_bytes(), before)
+
     def test_corrupt_snapshot_preserved(self):
         self.assertEqual(self.launch().returncode, 0)
         snapshot = self.home / 'backups' / 'last_snapshot.json'

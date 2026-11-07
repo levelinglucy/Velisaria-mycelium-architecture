@@ -46,7 +46,7 @@ completeness have not been verified.
 
 The historical `read_json` returned defaults for malformed JSON, while
 `Kernel.awaken` writes identity/state. On live paths this could overwrite
-damaged but recoverable data. The maintained package rejects invalid JSON at
+damaged but recoverable data. The maintained package rejects invalid or structurally unusable JSON at
 boot and writes JSON through same-directory temporary files before replacing.
 The existing data is left intact on failure before replacement. Journal
 appends are **not** transactional with identity/state updates; real power-loss

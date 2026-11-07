@@ -92,6 +92,24 @@ class Bootstrapper:
                     value = read_json(path, None)
                     if not isinstance(value, dict):
                         problems.append(f'Invalid JSON object: {name}')
+                    elif name == 'config':
+                        required_organs = value.get('minimum_required_organs')
+                        if (not isinstance(required_organs, list)
+                                or not all(isinstance(x, str) for x in required_organs)):
+                            problems.append('Invalid minimum_required_organs in config')
+                        if not isinstance(value.get('interactive_shell'), bool):
+                            problems.append('Invalid interactive_shell in config')
+                        for interval in ('snapshot_interval_seconds',
+                                         'heartbeat_interval_seconds'):
+                            v = value.get(interval)
+                            if not isinstance(v, (int, float)) or isinstance(v, bool) or v <= 0:
+                                problems.append(f'Invalid {interval} in config')
+                    elif name == 'state':
+                        if 'notes' in value and not isinstance(value['notes'], list):
+                            problems.append('Invalid state notes type')
+                    elif name == 'identity':
+                        if not isinstance(value.get('name'), str) or not value['name']:
+                            problems.append('Invalid identity name')
                 except (ValueError, UnicodeError, OSError):
                     problems.append(f'Unreadable/invalid JSON: {name}')
         return BootStatus('validate', not problems,
