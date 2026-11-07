@@ -4,17 +4,19 @@
 
 **Goal:** Make the historically flattened Python upload runnable without
 overwriting the archived memory and identity, and fail closed on damaged
-persistent JSON. **Stage:** proposed unreleased alpha candidate; integration,
-validation and publication are tracked separately.
+persistent JSON, including partial live installations. **Stage:** proposed
+unreleased alpha candidate; integration, validation and publication are tracked
+separately.
 
 **Current change:** reconstruct the intended `velisara_agent` package
 hierarchy and missing daemon base, use a separate opt-in data root, atomic
-JSON replacement and exclusive PID locking. Retain original flat source and
-uploaded state/log files for provenance.
+JSON replacement and exclusive PID locking. A partially present existing runtime
+refuses default recreation, and background workers start only after successful
+awakening. Retain original flat source and uploaded state/log files for provenance.
 
-**Next:** (1) validate the exact PR revision including corrupt-journal refusal;
-(2) review launcher lifecycle and partial-runtime recovery using synthetic data;
-(3) decide on alpha integration while retaining the no-migration boundary.
+**Next:** (1) verify final CI for missing-store and startup-order regressions;
+(2) check the current PR base/protections before an alpha integration decision;
+(3) revisit snapshot rotation and wider durability only with a specific need.
 
 **Material limits:** There is no automatic migration of archived root-level
 data; maintained JSONL is checked at startup, but power-loss durability,
@@ -56,6 +58,21 @@ proportional to journal size; it neither repairs the file nor judges whether
 historical root-level records are safe to import. Journal appends are **not**
 transactional with identity/state updates; external concurrent writers and
 real power-loss guarantees remain out of scope.
+
+On each launch, default files are created only when **none** of the five essential
+persistent stores exists. If some survive but another is missing (for example,
+previously initialized `memory.jsonl` or `last_snapshot.json` was lost), the
+launcher refuses before changing the surviving stores. Partial first-time
+initialization now also requires owner review. This detects incomplete data
+files, not every possible history: an empty data tree containing only logs or
+directories is indistinguishable from a fresh install, and independent writers
+remain outside the PID-lock contract.
+
+The launcher finishes `Kernel.awaken()` before starting daemons. Previously,
+the memory worker's immediate first tick could overwrite the last snapshot
+with pre-awakening state. After the change, periodic snapshots still replace
+the same single rolling file; they are **not** a retained versioned backup,
+and this ordering change is not a transactional boot guarantee.
 
 Lock acquisition now creates its PID file exclusively and removes only a lock
 owned by this launcher. We intentionally refuse existing/stale locks rather
