@@ -46,6 +46,29 @@ class Bootstrapper:
         return BootStatus('layout', True, [f'Ensured {len(ALL_DIRS)} directories.'])
 
     def ensure_defaults(self) -> BootStatus:
+        # An existing runtime is not a fresh install. If even one essential
+        # persistent store is missing, preserve the survivors for owner review.
+        # Symlinks (including dangling ones) count as existing evidence.
+        stores = {
+            'config': CONFIG_FILE,
+            'identity': IDENTITY_FILE,
+            'state': STATE_FILE,
+            'memory': MEMORY_FILE,
+            'snapshot': SNAPSHOT_FILE,
+        }
+        present = [name for name, path in stores.items()
+                   if path.exists() or path.is_symlink()]
+        if present and len(present) != len(stores):
+            missing = [name for name in stores if name not in present]
+            return BootStatus('defaults', False, [
+                'Incomplete existing runtime: missing ' + ', '.join(missing)
+                + '. Preserve remaining files; no defaults were recreated.'
+            ])
+        if present:
+            return BootStatus('defaults', True, [
+                'Existing persistent stores found; no defaults changed.'
+            ])
+
         details = []
         if not CONFIG_FILE.exists():
             write_json(CONFIG_FILE, DEFAULT_CONFIG)
