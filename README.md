@@ -22,7 +22,9 @@ The live data root defaults to `~/.velisara_agent`. Set
 existing data. Run `quit` to exit. No network connection is opened.
 Use only copies for migration experiments; do not copy untrusted JSON or
 JSONL into live data. A damaged journal refuses awakening instead of silently
-extending broken records. An existing PID lock after an interruption requires owner review.
+extending broken records. A partially present existing live data home also
+refuses awakening rather than recreating a missing journal or snapshot. An
+existing PID lock after an interruption requires owner review.
 
 **Development:** This is an **unreleased alpha candidate**. See
 [developer notes](./DEV_NOTES.md) for goals, limitations, validation, and
