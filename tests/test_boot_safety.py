@@ -159,6 +159,50 @@ launcher.run()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('is awake', result.stdout)
 
+
+    def test_config_required_detached_organ_blocks_awakening(self):
+        self.assertIn('is awake', self.launch().stdout)
+        config = self.home / 'config' / 'system_config.json'
+        cfg = json.loads(config.read_text(encoding='utf-8'))
+        cfg['minimum_required_organs'].append('voice')  # known but detached
+        config.write_text(json.dumps(cfg) + '\n', encoding='utf-8')
+        journal = self.home / 'data' / 'memory.jsonl'
+        state = self.home / 'data' / 'state.json'
+        before = (journal.read_bytes(), state.read_bytes())
+        result = self.launch()
+        self.assertIn('Refusing awakening', result.stdout, result.stderr)
+        self.assertEqual(before, (journal.read_bytes(), state.read_bytes()))
+        manifest = json.loads((self.home / 'data' / 'body_manifest.json').read_text())
+        self.assertIn('voice', manifest['missing_required'])
+        self.assertFalse(manifest['viable'])
+
+    def test_config_unknown_required_organ_blocks_awakening(self):
+        self.assertIn('is awake', self.launch().stdout)
+        config = self.home / 'config' / 'system_config.json'
+        cfg = json.loads(config.read_text(encoding='utf-8'))
+        cfg['minimum_required_organs'].append('nonexistent_organ')
+        config.write_text(json.dumps(cfg) + '\n', encoding='utf-8')
+        journal = self.home / 'data' / 'memory.jsonl'
+        before = journal.read_bytes()
+        result = self.launch()
+        self.assertIn('Refusing awakening', result.stdout, result.stderr)
+        self.assertEqual(before, journal.read_bytes())
+        manifest = json.loads((self.home / 'data' / 'body_manifest.json').read_text())
+        self.assertIn('nonexistent_organ', manifest['missing_required'])
+
+    def test_promoted_attached_organ_appears_as_required(self):
+        self.assertIn('is awake', self.launch().stdout)
+        config = self.home / 'config' / 'system_config.json'
+        cfg = json.loads(config.read_text(encoding='utf-8'))
+        cfg['minimum_required_organs'].append('dream_engine')
+        config.write_text(json.dumps(cfg) + '\n', encoding='utf-8')
+        result = self.launch()
+        self.assertIn('is awake', result.stdout, result.stderr)
+        self.assertIn('dream_engine', result.stdout.split('Required organs: ')[1].splitlines()[0])
+        manifest = json.loads((self.home / 'data' / 'body_manifest.json').read_text())
+        promoted = next(o for o in manifest['organs'] if o['name'] == 'dream_engine')
+        self.assertTrue(promoted['required'])
+
     def test_atomic_write_refuses_unserializable_input(self):
         from velisara_agent.utils import write_json
         target = Path(self.temp.name) / 'important.json'
