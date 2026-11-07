@@ -77,11 +77,12 @@ def run():
             MemoryDaemon(interval_seconds=config.get('snapshot_interval_seconds', 30)),
             PulseDaemon(interval_seconds=config.get('heartbeat_interval_seconds', 5)),
         ]
+        # Do not start background workers until all awakening writes complete.
+        # In particular, MemoryDaemon must not snapshot the previous cold state.
+        print(kernel.awaken())
         for daemon in daemons:
             daemon.start(context)
             logger.boot('info', f'Daemon started: {daemon.name}')
-
-        print(kernel.awaken())
         if config.get('interactive_shell', True):
             while True:
                 try:
