@@ -136,9 +136,9 @@ class TestLaunchSafety(unittest.TestCase):
         state = self.home / 'data' / 'state.json'
         state_json = json.loads(state.read_text(encoding='utf-8'))
         state_json['status'] = 'quiescent'
-        state.write_text(json.dumps(state_json) + '\\n', encoding='utf-8')
+        state.write_text(json.dumps(state_json) + '\n', encoding='utf-8')
         snapshot = self.home / 'backups' / 'last_snapshot.json'
-        snapshot.write_text('{"marker":"prior snapshot"}\\n', encoding='utf-8')
+        snapshot.write_text('{"marker":"prior snapshot"}\n', encoding='utf-8')
         script = """
 from velisara_agent.daemons.memory import MemoryDaemon
 from velisara_agent.paths import STATE_FILE, SNAPSHOT_FILE
@@ -154,7 +154,7 @@ launcher.run()
 """
         result = subprocess.run(
             [sys.executable, '-c', script], cwd=REPO_ROOT,
-            env=self.env, input='quit\\n', capture_output=True, text=True, timeout=15,
+            env=self.env, input='quit\n', capture_output=True, text=True, timeout=15,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('is awake', result.stdout)
